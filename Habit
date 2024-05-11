@@ -1,0 +1,263 @@
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
+
+class Habit {
+    private final String name; // The name of the habit
+    private String frequency; // The frequency of the habit (e.g., daily, weekly)
+    private final int goal; // The goal for the habit (number of times to achieve it)
+    private final String deadline; // Deadline for completing the habit each day
+    private final List<Boolean> progress; // A list to track progress (True if completed, otherwise False)
+
+    // Constructor
+    public Habit(String name, String frequency, int goal, String deadline) {
+        this.name = name;
+        this.frequency = frequency;
+        this.goal = goal;
+        this.deadline = deadline;
+        this.progress = new ArrayList<>(); // Initialize the progress list
+    }
+
+    // Method to record daily progress for the habit
+    public void recordProgress(boolean completed) {
+        this.progress.add(completed); // Add a boolean to represent if it was completed
+    }
+
+    // Method to change the frequency of the habit
+    public void changeFrequency(String newFrequency) {
+        this.frequency = newFrequency; // Change the frequency to a new value
+    }
+
+    // Method to check if the goal is achieved
+    public boolean isGoalAchieved() {
+        int completedCount = 0;
+        // Count how many times the habit has been completed
+        for (Boolean status : progress) {
+            if (status) {
+                completedCount++;
+            }
+        }
+        return completedCount >= goal; // Return true if completed times meet or exceed the goal
+    }
+
+    // Getters
+    public String getName() {
+        return name; // Get the name of the habit
+    }
+
+    public String getFrequency() {
+        return frequency; // Get the frequency of the habit
+    }
+
+    public int getGoal() {
+        return goal; // Get the goal of the habit
+    }
+
+    public String getDeadline() {
+        return deadline; // Get the deadline for the habit
+    }
+
+    // Method to get the current streak of completed days
+    public int getCurrentStreak() {
+        int streak = 0; // Counter for the streak
+        // Loop backward to count consecutive completed days
+        for (int i = progress.size() - 1; i >= 0; i--) {
+            if (progress.get(i)) {
+                streak++;
+            } else {
+                break; // If a day was missed, break the streak
+            }
+        }
+        return streak;
+    }
+
+    // Method to get the total number of completed days
+    public int getProgressCount() {
+        int completedCount = 0; // Counter for completed days
+        // Count how many times the habit was completed
+        for (Boolean status : progress) {
+            if (status) {
+                completedCount++;
+            }
+        }
+        return completedCount; // Return the total number of completed days
+    }
+}
+
+// Main class for Habit Tracker
+class HabitTracker {
+    // list to hold all the habits
+    private static final List<Habit> habitList = new ArrayList<>();
+    private static final Scanner scanner = new Scanner(System.in);
+
+    // Main method to run Habit Tracker
+    public static void main(String[] args) {
+        boolean running = true; // Flag to control the main loop
+
+        // Main loop to keep the program running
+        while (running) {
+            // Display the main menu options
+            System.out.println("\nHabit Tracker Menu:");
+            System.out.println("1. Add a new habit");
+            System.out.println("2. Record daily progress");
+            System.out.println("3. Track goal achievement");
+            System.out.println("4. Change habit frequency");
+            System.out.println("5. Exit program\n");
+
+            // Read the user's choice
+            int choice = -1; // Initialize choice with an invalid value
+            try {
+                choice = scanner.nextInt(); // Attempt to read an integer from the console
+            } catch (Exception e) {
+                System.out.println("Invalid input. Please enter a number from 1 to 5."); // print error message
+                scanner.nextLine();
+                continue;
+            }
+
+            scanner.nextLine();
+
+            // Switch-case to handle the user's menu selection
+            switch (choice) {
+                case 1 -> // Add a new habit
+                        addNewHabit(); // Call the function to add a new habit
+                case 2 -> // Record daily progress
+                        recordProgress(); // Call the function to record daily progress
+                case 3 -> // Track goal achievement
+                        trackGoalAchievement(); // Call the function to track goal achievement
+                case 4 -> // Change habit frequency
+                        changeHabitFrequency(); // Call the function to change habit frequency
+                case 5 -> { // Exit the program
+                    running = false; // Set the flag to stop the main loop
+                    System.out.println("Exiting the program. Goodbye!");
+                }
+                default -> // If the choice is invalid
+                        System.out.println("Invalid choice. Please try again."); // print error message
+            }
+        }
+
+        scanner.close();
+    }
+
+    // Function to add a new habit to the habit list
+    public static void addNewHabit() {
+        System.out.println("Enter the habit name:");
+        String habitName = scanner.nextLine(); // Read the habit name
+
+        System.out.println("Enter the habit frequency (e.g., daily, weekly):");
+        String frequency = scanner.nextLine(); // Read the frequency
+
+        System.out.println("Enter the habit goal (number of days to achieve):");
+        int goal = scanner.nextInt(); // Read the goal (as an integer)
+        scanner.nextLine();
+
+        System.out.println("Enter the habit deadline (e.g., 8 PM):");
+        String deadline = scanner.nextLine(); // Read the deadline time
+
+        // Create a new Habit object
+        Habit newHabit = new Habit(habitName, frequency, goal, deadline);
+        // Add the new habit to the list of habits
+        habitList.add(newHabit);
+
+        // Confirm the habit was added successfully
+        System.out.println("Habit '" + habitName + "' added successfully.");
+    }
+
+    // Function to record daily progress for a habit
+    private static void recordProgress() {
+        if (habitList.isEmpty()) {
+            System.out.println("No habits found. Please add a habit first."); // If no habits, prompt to add one
+            return; // exit the function
+        }
+
+        System.out.println("Select the habit to record progress:");
+        displayHabitList(); // display the list of habits with index numbers for selection
+
+        int habitIndex = scanner.nextInt() - 1; // Read the user's choice and adjust for 0-based index
+        scanner.nextLine();
+
+        if (habitIndex < 0 || habitIndex >= habitList.size()) {
+            System.out.println("Invalid selection. Please choose a valid habit.");
+            return;
+        }
+
+        System.out.println("Did you complete the habit today? (Yes/No):");
+        String progressResponse = scanner.nextLine(); // Read if the habit was completed
+
+        // Determine if the habit was completed based on user input
+        boolean completed = progressResponse.equalsIgnoreCase("yes"); // True if "Yes", otherwise False
+
+        // Record the daily progress for the selected habit
+        Habit selectedHabit = habitList.get(habitIndex);
+        selectedHabit.recordProgress(completed);
+
+        // Provide feedback to the user
+        if (completed) {
+            System.out.println("Great job! Habit '" + selectedHabit.getName() + "' completed for today.");
+            // print positive feedback
+        } else {
+            System.out.println("Don't worry! You can try again tomorrow."); // print encouraging feedback
+        }
+    }
+
+    // Function to change the frequency of a habit
+    private static void changeHabitFrequency() {
+        if (habitList.isEmpty()) {
+            System.out.println("No habits found. Please add a habit first."); // Prompt if no habits exist
+            return;
+        }
+
+        System.out.println("Select the habit to change frequency:");
+        displayHabitList(); // Display the list of habits for selection
+
+        int habitIndex = scanner.nextInt() - 1;
+        scanner.nextLine();
+
+        if (habitIndex < 0 || habitIndex >= habitList.size()) {
+            System.out.println("Invalid selection. Please choose a valid habit.");
+            return; // Exit the function
+        }
+
+        System.out.println("Enter the new frequency for the habit (e.g., daily, weekly):");
+        String newFrequency = scanner.nextLine(); // Read the new frequency
+
+        // Change the frequency for the selected habit
+        Habit selectedHabit = habitList.get(habitIndex);
+        selectedHabit.changeFrequency(newFrequency);
+
+        // Confirm the frequency change to the user
+        System.out.println("Frequency for habit '" + selectedHabit.getName() + "' changed to " + newFrequency + ".");
+    }
+
+    // Function to track goal achievement and provide feedback
+    private static void trackGoalAchievement() {
+        if (habitList.isEmpty()) {
+            System.out.println("No habits found. Please add a habit first.");
+            return;
+        }
+
+        System.out.println("Checking goal achievement...");
+
+        // Loop through the list of habits to check their goals
+        for (Habit habit : habitList) {
+            // Check if the goal for this habit is achieved
+            if (habit.isGoalAchieved()) {
+                // Congratulate the user on achieving their goal
+                System.out.println("Congratulations! You achieved the goal for habit '" + habit.getName() + "'.");
+                // Suggest setting a new goal or creating a new habit
+                System.out.println("Consider setting a new goal or creating a new habit.");
+            } else {
+                // Provide feedback on the current progress towards the goal
+                System.out.println("Progress for habit '" + habit.getName() + "': " + habit.getProgressCount() + " out of " + habit.getGoal());
+            }
+        }
+    }
+
+    // Utility function to display the list of habits with index numbers
+    private static void displayHabitList() {
+        // Loop through the list of habits and display them with their index numbers
+        for (int i = 0; i < habitList.size(); i++) {
+            System.out.println((i + 1) + ". " + habitList.get(i).getName());
+        }
+    }
+
+}
